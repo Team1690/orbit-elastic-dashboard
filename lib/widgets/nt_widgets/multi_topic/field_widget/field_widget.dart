@@ -60,8 +60,11 @@ class FieldWidget extends NTWidget {
         listenable: Listenable.merge(model.subscriptions),
         child: model.field.fieldImage,
         builder: (context, child) {
-          List<Object?> robotPositionRaw =
-              model.robotSubscription.value?.tryCast<List<Object?>>() ?? [];
+          List<Object?> robotPositionRaw = [
+            model.robotXSubscription.value,
+            model.robotYSubscription.value,
+            model.robotHeadingSubscription.value,
+          ];
 
           double robotX = 0;
           double robotY = 0;

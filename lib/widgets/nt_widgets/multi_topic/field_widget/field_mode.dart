@@ -20,7 +20,9 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
   String type = 'Field';
 
   String get robotTopicName => '$topic/Robot';
-  late NT4Subscription robotSubscription;
+  late NT4Subscription robotXSubscription;
+  late NT4Subscription robotYSubscription;
+  late NT4Subscription robotHeadingSubscription;
   ui.Image? _robotImage;
 
   final List<String> otherObjectTopics = [];
@@ -33,7 +35,9 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
 
   @override
   List<NT4Subscription> get subscriptions => [
-    robotSubscription,
+    robotXSubscription,
+    robotYSubscription,
+    robotHeadingSubscription,
     ...otherObjectSubscriptions,
     ...visionTopics.listenables.whereType<NT4Subscription>(),
     ...gamePieceTopics.listenables.whereType<NT4Subscription>(),
@@ -44,7 +48,7 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
 
   late Function(NT4Topic topic) topicAnnounceListener;
 
-  static const String _defaultGame = 'Crescendo';
+  static const String _defaultGame = 'Reefscape';
   String _fieldGame = _defaultGame;
   late Field _field;
 
@@ -360,7 +364,18 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
   void initializeSubscriptions() {
     otherObjectSubscriptions.clear();
 
-    robotSubscription = ntConnection.subscribe(robotTopicName, super.period);
+    robotXSubscription = ntConnection.subscribe(
+      '${robotTopicName}X',
+      super.period,
+    );
+    robotYSubscription = ntConnection.subscribe(
+      '${robotTopicName}Y',
+      super.period,
+    );
+    robotHeadingSubscription = ntConnection.subscribe(
+      '${robotTopicName}Heading',
+      super.period,
+    );
 
     visionTopics.initialize();
     gamePieceTopics.initialize();
