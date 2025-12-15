@@ -124,8 +124,10 @@ class NetworkTableTreeRow {
   ) {
     NT4Type entryType = entry.type;
 
+    SingleTopicNTWidgetModel? model;
+
     if (entryType.dataType == NT4DataType.boolean) {
-      return BooleanBoxModel(
+      model = BooleanBoxModel(
         ntConnection: ntConnection,
         preferences: preferences,
         topic: entry.topic.name,
@@ -133,7 +135,7 @@ class NetworkTableTreeRow {
         ntStructMeta: entry.meta,
       );
     } else if (entryType.isViewable) {
-      return TextDisplayModel(
+      model = TextDisplayModel(
         ntConnection: ntConnection,
         preferences: preferences,
         topic: entry.topic.name,
@@ -142,7 +144,8 @@ class NetworkTableTreeRow {
       );
     }
 
-    return null;
+    model?.init();
+    return model;
   }
 
   Future<NTWidgetModel?>? getPrimaryWidget() async {

@@ -27,7 +27,9 @@ class NTWidgetContainerModel extends WidgetContainerModel {
     required super.title,
     required this.childModel,
     super.enabled,
-  });
+  }) {
+    init();
+  }
 
   NTWidgetContainerModel.fromJson({
     required this.ntConnection,

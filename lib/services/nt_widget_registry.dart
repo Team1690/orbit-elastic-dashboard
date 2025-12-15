@@ -445,8 +445,10 @@ class NTWidgetRegistry {
 
     ensureInitialized();
 
+    NTWidgetModel model;
+
     if (_modelNameBuildMap.containsKey(type)) {
-      return _modelNameBuildMap[type]!(
+      model = _modelNameBuildMap[type]!(
         ntConnection: ntConnection,
         preferences: preferences,
         topic: topic,
@@ -454,17 +456,19 @@ class NTWidgetRegistry {
         dataType: dataType,
         period: period,
       );
+    } else {
+      model = SingleTopicNTWidgetModel.createDefault(
+        ntConnection: ntConnection,
+        preferences: preferences,
+        type: type,
+        topic: topic,
+        ntStructMeta: ntStructMeta,
+        dataType: dataType,
+        period: period,
+      );
     }
-
-    return SingleTopicNTWidgetModel.createDefault(
-      ntConnection: ntConnection,
-      preferences: preferences,
-      type: type,
-      topic: topic,
-      ntStructMeta: ntStructMeta,
-      dataType: dataType,
-      period: period,
-    );
+    model.init();
+    return model;
   }
 
   static NTWidgetModel buildNTModelFromJson(
@@ -476,25 +480,29 @@ class NTWidgetRegistry {
   }) {
     ensureInitialized();
 
+    NTWidgetModel model;
+
     if (_modelJsonBuildMap.containsKey(type)) {
-      return _modelJsonBuildMap[type]!(
+      model = _modelJsonBuildMap[type]!(
         ntConnection: ntConnection,
         preferences: preferences,
         jsonData: jsonData,
       );
+    } else {
+      onWidgetTypeNotFound?.call(
+        'Unknown widget type: \'$type\', defaulting to Empty Model.',
+      );
+      model = SingleTopicNTWidgetModel.createDefault(
+        ntConnection: ntConnection,
+        preferences: preferences,
+        type: type,
+        topic: tryCast(jsonData['topic']) ?? '',
+        dataType: NT4Type.parseNullable(tryCast(jsonData['data_type'])),
+        period: tryCast(jsonData['period']),
+      );
     }
-
-    onWidgetTypeNotFound?.call(
-      'Unknown widget type: \'$type\', defaulting to Empty Model.',
-    );
-    return SingleTopicNTWidgetModel.createDefault(
-      ntConnection: ntConnection,
-      preferences: preferences,
-      type: type,
-      topic: tryCast(jsonData['topic']) ?? '',
-      dataType: NT4Type.parseNullable(tryCast(jsonData['data_type'])),
-      period: tryCast(jsonData['period']),
-    );
+    model.init();
+    return model;
   }
 
   static double getMinimumWidth(NTWidgetModel widget) {
