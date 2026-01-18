@@ -97,18 +97,19 @@ class FieldWidget extends NTWidget {
 
           final imageSize = model.field.fieldImageSize ?? const Size(0, 0);
 
-          final rotatedImageBoundingBox = imageSize.rotateBy(
-            -radians(model.fieldRotation),
-          );
+          double rotation = -radians(model.fieldRotation);
 
-          FittedSizes fittedSizes = applyBoxFit(
-            BoxFit.contain,
-            rotatedImageBoundingBox,
-            size,
-          );
+          final rotatedImageBoundingBox = imageSize.rotateBy(rotation);
 
-          double scale =
-              fittedSizes.destination.width / rotatedImageBoundingBox.width;
+          double scale = 1.0;
+
+          if (rotatedImageBoundingBox.width > 0) {
+            scale = size.width / rotatedImageBoundingBox.width;
+          }
+
+          if (rotatedImageBoundingBox.height > 0) {
+            scale = min(scale, size.height / rotatedImageBoundingBox.height);
+          }
 
           if (scale.isNaN) {
             scale = 0;
@@ -231,14 +232,13 @@ class FieldWidget extends NTWidget {
                 // 4. Scale from screen coordinates to field meters and offset by field center.
                 double realX =
                     (xUnrotatedRel / scale) /
-                            model.field.pixelsPerMeterHorizontal +
-                        model.field.center.dx /
-                            model.field.pixelsPerMeterHorizontal;
+                        model.field.pixelsPerMeterHorizontal +
+                    model.field.center.dx /
+                        model.field.pixelsPerMeterHorizontal;
                 double realY =
                     (-yUnrotatedRelMirrored / scale) /
-                            model.field.pixelsPerMeterVertical +
-                        model.field.center.dy /
-                            model.field.pixelsPerMeterVertical;
+                        model.field.pixelsPerMeterVertical +
+                    model.field.center.dy / model.field.pixelsPerMeterVertical;
 
                 model.commanderTopics.set(Offset(realX, realY));
               }
@@ -269,7 +269,8 @@ class FieldWidget extends NTWidget {
                               center: imageDisplaySize.toOffset / 2,
                               color: model.trajectoryColor,
                               points: points,
-                              strokeWidth: model.trajectoryPointSize *
+                              strokeWidth:
+                                  model.trajectoryPointSize *
                                   model.field.pixelsPerMeterHorizontal *
                                   scale,
                             ),
