@@ -790,6 +790,7 @@ class _DashboardPageState extends State<DashboardPage>
   void _addTrueSample(String topicName) {
     NT4Topic? topic = model.ntConnection.getTopicFromName(topicName);
     if (topic != null) {
+      model.ntConnection.publishTopic(topic);
       model.ntConnection.updateDataFromTopic(topic, true);
     }
   }
