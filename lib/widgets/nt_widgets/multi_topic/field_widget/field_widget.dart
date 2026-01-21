@@ -245,13 +245,13 @@ class FieldWidget extends NTWidget {
                     tapFromCenter.dy * cos(angle);
 
                 // Un-mirror if necessary
-                final yUnmirrored = model.allianceTopic.value
-                    ? -yUnrotated
-                    : yUnrotated;
+                final xUnmirrored = model.allianceTopic.value
+                    ? -xUnrotated
+                    : xUnrotated;
 
                 // Un-scale from display pixels to image pixels
-                final xImage = xUnrotated / scale;
-                final yImage = yUnmirrored / scale;
+                final xImage = xUnmirrored / scale;
+                final yImage = yUnrotated / scale;
 
                 // Go from image pixels relative to center to image pixels relative to TL
                 final xImageFromTL = xImage + model.field.center.dx;
@@ -277,8 +277,8 @@ class FieldWidget extends NTWidget {
                         quarterTurns: (model.fieldRotation / 90.0).round(),
                         child: Transform(
                           transform: Matrix4.diagonal3Values(
-                            1,
                             model.allianceTopic.value ? -1 : 1,
+                            1,
                             1,
                           ),
                           alignment: Alignment.center,
