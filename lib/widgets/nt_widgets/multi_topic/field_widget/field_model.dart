@@ -250,21 +250,20 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
     required super.ntConnection,
     required super.preferences,
     required Map<String, dynamic> jsonData,
-  }) : super.fromJson(jsonData: jsonData) {
-    visionTopics = VisionTopics(
-      ntConnection: ntConnection,
-      period: super.period,
-    );
-    gamePieceTopics = GamePieceTopics(
-      ntConnection: ntConnection,
-      period: super.period,
-    );
-    allianceTopic = AllianceTopic(
-      ntConnection: ntConnection,
-      period: super.period,
-    );
-    commanderTopics = CommanderTopics(ntConnection: ntConnection);
-
+  }) : visionTopics = VisionTopics(
+         ntConnection: ntConnection,
+         period: tryCast<double>(jsonData['period']) ?? 0.0,
+       ),
+       gamePieceTopics = GamePieceTopics(
+         ntConnection: ntConnection,
+         period: tryCast<double>(jsonData['period']) ?? 0.0,
+       ),
+       allianceTopic = AllianceTopic(
+         ntConnection: ntConnection,
+         period: tryCast<double>(jsonData['period']) ?? 0.0,
+       ),
+       commanderTopics = CommanderTopics(ntConnection: ntConnection),
+       super.fromJson(jsonData: jsonData) {
     _fieldGame = tryCast(jsonData['field_game']) ?? _fieldGame;
 
     _robotImagePath = tryCast(jsonData['robot_image_path']);
