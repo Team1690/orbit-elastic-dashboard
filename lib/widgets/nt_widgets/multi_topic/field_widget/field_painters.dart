@@ -76,13 +76,17 @@ class RobotPainter extends CustomPainter {
       // Fallback to drawing a shape if no image is provided
       final Paint paint = Paint()
         ..color = robotColor
-        ..style = PaintingStyle.fill;
-      final Rect robotRect = Rect.fromCenter(
-        center: Offset.zero,
-        width: length,
-        height: width,
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0;
+      final RRect robotRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: length,
+          height: width,
+        ),
+        Radius.circular(width * 0.01),
       );
-      canvas.drawRect(robotRect, paint);
+      canvas.drawRRect(robotRect, paint);
 
       // Draw a triangle for heading
       final Paint trianglePaint = Paint()

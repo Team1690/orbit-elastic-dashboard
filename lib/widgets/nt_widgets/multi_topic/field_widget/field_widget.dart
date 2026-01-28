@@ -284,6 +284,22 @@ class FieldWidget extends NTWidget {
                                 child: child!,
                               ),
                             ),
+                            CustomPaint(
+                              size: imageDisplaySize,
+                              painter: RobotPainter(
+                                center: imageDisplaySize.toOffset / 2,
+                                field: model.field,
+                                robotPose: Offset(robotX, robotY),
+                                robotAngle: robotTheta,
+                                robotSize: Size(
+                                  model.robotWidthMeters,
+                                  model.robotLengthMeters,
+                                ),
+                                robotColor: model.robotColor,
+                                robotImage: model.robotImage,
+                                scale: scale,
+                              ),
+                            ),
                             if (model.showTrajectories)
                               for (List<Offset> points in trajectoryPoints)
                                 CustomPaint(
@@ -370,22 +386,6 @@ class FieldWidget extends NTWidget {
                                   scale: scale,
                                 ),
                               ),
-                            CustomPaint(
-                              size: imageDisplaySize,
-                              painter: RobotPainter(
-                                center: imageDisplaySize.toOffset / 2,
-                                field: model.field,
-                                robotPose: Offset(robotX, robotY),
-                                robotAngle: robotTheta,
-                                robotSize: Size(
-                                  model.robotWidthMeters,
-                                  model.robotLengthMeters,
-                                ),
-                                robotColor: model.robotColor,
-                                robotImage: model.robotImage,
-                                scale: scale,
-                              ),
-                            ),
                           ],
                         ),
                       ),
