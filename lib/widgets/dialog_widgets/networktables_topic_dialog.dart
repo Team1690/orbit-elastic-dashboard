@@ -43,8 +43,9 @@ class _NetworkTablesTopicDialogState extends State<NetworkTablesTopicDialog> {
   @override
   Widget build(BuildContext context) {
     List<String> filteredTopics = _allTopics
-        .where((topic) =>
-            topic.toLowerCase().contains(_searchText.toLowerCase()))
+        .where(
+          (topic) => topic.toLowerCase().contains(_searchText.toLowerCase()),
+        )
         .toList();
 
     return AlertDialog(
