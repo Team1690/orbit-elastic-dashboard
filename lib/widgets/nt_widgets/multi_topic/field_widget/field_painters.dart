@@ -1,13 +1,15 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
+
 import 'package:dot_cast/dot_cast.dart';
+import 'package:vector_math/vector_math_64.dart' show radians;
+
 import 'package:elastic_dashboard/services/field_images.dart';
 import 'package:elastic_dashboard/services/nt4_client.dart';
 import 'package:elastic_dashboard/services/struct_schemas/pose2d_struct.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/special_marker_topics.dart';
-import 'package:flutter/material.dart';
-import 'package:vector_math/vector_math_64.dart' show radians;
 
 class RobotPainter extends CustomPainter {
   final Offset center;

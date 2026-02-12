@@ -1,7 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'package:elastic_dashboard/services/nt4_client.dart';
 import 'package:elastic_dashboard/services/nt4_type.dart';
 import 'package:elastic_dashboard/services/nt_connection.dart';
-import 'package:flutter/material.dart';
 
 class SubscribedTopic<T extends Object?> {
   final NTConnection ntConnection;

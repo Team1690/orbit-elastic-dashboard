@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
+
 import 'package:elastic_dashboard/services/nt4_client.dart';
 import 'package:elastic_dashboard/services/nt_connection.dart';
-import 'package:flutter/material.dart';
 
 class Marker {
   final double x;

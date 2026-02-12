@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+
 import 'package:dot_cast/dot_cast.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:elastic_dashboard/services/field_images.dart';
 import 'package:elastic_dashboard/services/nt4_client.dart';
 import 'package:elastic_dashboard/services/text_formatter_builder.dart';
@@ -12,9 +17,6 @@ import 'package:elastic_dashboard/widgets/dialog_widgets/dialog_toggle_switch.da
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/field_topics.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/special_marker_topics.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/nt_widget.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class FieldWidgetModel extends MultiTopicNTWidgetModel {
   @override

@@ -1,10 +1,10 @@
-import 'package:elastic_dashboard/services/nt_connection.dart';
-import 'package:elastic_dashboard/widgets/nt_widgets/nt_widget.dart';
 import 'package:flutter/material.dart';
 
+import 'package:elastic_dashboard/services/nt_connection.dart';
 import 'package:elastic_dashboard/widgets/dialog_widgets/dialog_text_input.dart';
 import 'package:elastic_dashboard/widgets/dialog_widgets/networktables_topic_dialog.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/multi_topic_graph.dart';
+import 'package:elastic_dashboard/widgets/nt_widgets/nt_widget.dart';
 
 class MultiTopicDialogEditor extends StatefulWidget {
   final NTConnection ntConnection;

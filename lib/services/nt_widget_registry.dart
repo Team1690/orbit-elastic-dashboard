@@ -1,4 +1,3 @@
-import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/field_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:dot_cast/dot_cast.dart';
@@ -18,6 +17,7 @@ import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/command_schedul
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/command_widget.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/differential_drive.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/encoder_widget.dart';
+import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/field_model.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/field_widget/field_widget.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/fms_info.dart';
 import 'package:elastic_dashboard/widgets/nt_widgets/multi_topic/gyro.dart';
