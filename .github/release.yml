@@ -1,0 +1,42 @@
+name: "Build & Release"
+
+on:
+    push:
+        branches:
+            - main
+        paths: 
+          - '**.dart'
+          - '**.yaml'
+          - '**.yml'
+          - '**.sh'
+          - '**.lock'
+
+jobs:
+    build:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: subosito/flutter-action@v2
+              with:
+                flutter-version: "3.35.1"
+                channel: 'stable'
+                cache: true
+
+            - name: Build
+              run: sh ./scripts/auto.sh
+              shell: bash
+            
+            - name: Compress
+              uses: vimtor/action-zip@v1.2
+              with:
+                files: dist-Release/
+                dest: release.zip
+    
+            - name: Release
+              uses: ncipollo/release-action@v1
+              with: 
+                artifacts: "release.zip"
+                tag: v1.2.${{ github.run_number }}
+                name: "v1.2 # ${{ github.run_number }}"
+                token: ${{ secrets.GITHUB_TOKEN }}
