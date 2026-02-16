@@ -610,7 +610,7 @@ class _DashboardPageState extends State<DashboardPage>
         LogicalKeyboardKey.keyF,
         modifiers: [KeyModifier.control],
       ),
-      callback: () => _addTrueSample('/Faults/ResetConveyFaults'),
+      callback: () => _addTrueSample('/Match/Commander/ResetConveyFaults'),
     );
     // Reset Gyro (Ctrl + Z)
     hotKeyManager.register(
