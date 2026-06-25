@@ -21,7 +21,6 @@ runs:
         channel: 'stable'
         flutter-version: '3.35.1'
         cache: true
-        cache-path: ${{ runner.tool_cache }}/flutter/${{ inputs.platform }}
 
     - name: Flutter Doctor
       shell: bash
