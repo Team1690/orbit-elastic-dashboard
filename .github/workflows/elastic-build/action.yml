@@ -19,8 +19,8 @@ runs:
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
-        flutter-version: '3.35.1'
-        cache: false
+        flutter-version: '3.44.3'
+        cache: true
 
     - name: Flutter Doctor
       shell: bash
