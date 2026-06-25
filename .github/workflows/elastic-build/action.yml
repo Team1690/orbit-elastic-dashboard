@@ -20,7 +20,7 @@ runs:
       with:
         channel: 'stable'
         flutter-version: '3.35.1'
-        cache: true
+        cache: false
 
     - name: Flutter Doctor
       shell: bash
