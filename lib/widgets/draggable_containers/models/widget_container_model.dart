@@ -163,14 +163,12 @@ abstract class WidgetContainerModel extends ChangeNotifier {
   WidgetContainerModel({
     required this.preferences,
     required Rect initialPosition,
-    required String? title,
-    bool showTitle = false,
-    bool enabled = false,
+    required this._title,
+    this._showTitle = false,
+    this._enabled = false,
     this.minWidth = 128.0,
     this.minHeight = 128.0,
-  }) : _title = title,
-       _showTitle = showTitle,
-       _enabled = enabled {
+  }) {
     _displayRect = initialPosition;
     init();
   }
@@ -178,13 +176,12 @@ abstract class WidgetContainerModel extends ChangeNotifier {
   WidgetContainerModel.fromJson({
     required Map<String, dynamic> jsonData,
     required this.preferences,
-    bool showTitle = false,
-    bool enabled = false,
+    this._showTitle = false,
+    this._enabled = false,
     this.minWidth = 128.0,
     this.minHeight = 128.0,
     Function(String errorMessage)? onJsonLoadingWarning,
-  }) : _enabled = enabled,
-       _showTitle = showTitle {
+  }) {
     fromJson(jsonData);
     init();
   }

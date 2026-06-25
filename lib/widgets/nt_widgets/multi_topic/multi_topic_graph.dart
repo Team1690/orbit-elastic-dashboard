@@ -83,20 +83,14 @@ class MultiTopicGraphModel extends MultiTopicNTWidgetModel {
 
     List<Color> colors = const [],
 
-    double timeDisplayed = 5.0,
+    this._timeDisplayed = 5.0,
 
-    double? minValue,
+    this._minValue,
 
-    double? maxValue,
+    this._maxValue,
 
     super.period,
-  }) : _timeDisplayed = timeDisplayed,
-
-       _minValue = minValue,
-
-       _maxValue = maxValue,
-
-       super() {
+  }) : super() {
     topicProperties.add(TopicProperties(topic: topic));
   }
 
