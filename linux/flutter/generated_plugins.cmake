@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  ffmpeg_kit_extended_flutter
   file_selector_linux
   screen_retriever_linux
   url_launcher_linux
