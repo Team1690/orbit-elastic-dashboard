@@ -294,12 +294,12 @@ class _ElasticState extends State<Elastic> {
 
     enabledSubscription.listen((enabled, _) async {
       if (enabled == true) {
-        print(
+        debugPrint(
           'Match enabled, starting recording !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
         );
         ScreenRecorder.start();
       } else {
-        print(
+        debugPrint(
           'Match disabled, stopping recording !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
         );
 
