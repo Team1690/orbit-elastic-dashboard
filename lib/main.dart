@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -285,6 +286,9 @@ class _ElasticState extends State<Elastic> {
 
   FlexTones get themeTones => themeVariant.tones(Brightness.dark);
 
+  Timer? _stopRecordingTimer;
+  final Duration _recordingStopDelay = const Duration(seconds: 5);
+
   @override
   void initState() {
     super.initState();
@@ -294,18 +298,26 @@ class _ElasticState extends State<Elastic> {
 
     enabledSubscription.listen((enabled, _) async {
       if (enabled == true) {
-        debugPrint(
-          'Match enabled, starting recording !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
-        );
-        ScreenRecorder.start();
-      } else {
-        debugPrint(
-          'Match disabled, stopping recording !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
-        );
+        _stopRecordingTimer?.cancel();
+        _stopRecordingTimer = null;
 
-        ScreenRecorder.stopAndWait();
+        if (!ScreenRecorder.isRecording) {
+          ScreenRecorder.start();
+        }
+      } else {
+        _stopRecordingTimer?.cancel();
+        _stopRecordingTimer = Timer(_recordingStopDelay, () {
+          ScreenRecorder.stopAndWait();
+          _stopRecordingTimer = null;
+        });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _stopRecordingTimer?.cancel();
+    super.dispose();
   }
 
   @override

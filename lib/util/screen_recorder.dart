@@ -1,7 +1,9 @@
 import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 
 class ScreenRecorder {
+  static bool isRecording = false;
   static Future<void> start() async {
+    isRecording = true;
     final String ffmpegCommand =
         '-y -f gdigrab -framerate 30 -i desktop -c:v mpeg4 -q:v 3 -pix_fmt yuv420p -movflags frag_keyframe+empty_moov C:\\Users\\Public\\Videos\\${_getFileName()}';
 
@@ -9,6 +11,7 @@ class ScreenRecorder {
   }
 
   static void stopAndWait() {
+    isRecording = false;
     Future<void>.delayed(const Duration(seconds: 1), () {
       FFmpegKitExtended.cancelAllSessions();
     });
