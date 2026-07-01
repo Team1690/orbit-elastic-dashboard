@@ -287,6 +287,7 @@ class _ElasticState extends State<Elastic> {
   FlexTones get themeTones => themeVariant.tones(Brightness.dark);
 
   Timer? _stopRecordingTimer;
+  Timer? _stopRecordingOnDisconnectTimer;
   final Duration _recordingStopDelay = const Duration(seconds: 5);
 
   @override
@@ -312,11 +313,30 @@ class _ElasticState extends State<Elastic> {
         });
       }
     });
+
+    widget.ntConnection.addDisconnectedListener(_onRobotDisconnected);
+    widget.ntConnection.addConnectedListener(_onRobotConnected);
+  }
+
+  void _onRobotDisconnected() {
+    _stopRecordingOnDisconnectTimer?.cancel();
+    _stopRecordingOnDisconnectTimer = Timer(_recordingStopDelay, () {
+      ScreenRecorder.stopAndWait();
+      _stopRecordingOnDisconnectTimer = null;
+    });
+  }
+
+  void _onRobotConnected() {
+    _stopRecordingOnDisconnectTimer?.cancel();
+    _stopRecordingOnDisconnectTimer = null;
   }
 
   @override
   void dispose() {
     _stopRecordingTimer?.cancel();
+    _stopRecordingOnDisconnectTimer?.cancel();
+    widget.ntConnection.removeDisconnectedListener(_onRobotDisconnected);
+    widget.ntConnection.removeConnectedListener(_onRobotConnected);
     super.dispose();
   }
 
