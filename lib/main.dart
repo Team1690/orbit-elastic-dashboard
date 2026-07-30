@@ -30,6 +30,11 @@ import 'package:screen_retriever/screen_retriever.dart'
 import 'package:window_manager/window_manager.dart'
     if (dart.library.js_interop) 'package:elastic_dashboard/util/stub/window_stub.dart';
 
+import 'package:elastic_dashboard/util/csv_logger.dart';
+
+/// Global instance of CsvLogger accessible across the app.
+late final CsvLogger csvLogger;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,6 +49,20 @@ void main() async {
   logger.info('Starting application: Version ${packageInfo.version}');
   await FFmpegKitExtended.initialize();
 
+  if (!kIsWeb) {
+    final Directory desktopDir = Directory(
+      "c:\\Users\\${Platform.environment['USERNAME']}\\Desktop",
+    );
+
+    final DateTime now = DateTime.now();
+
+    final String formattedDate = '${now.day}.${now.month}.${now.year}';
+    final Directory csvLogDir = Directory(
+      '${desktopDir.path}/CSVLogs/$formattedDate',
+    );
+    csvLogger = CsvLogger(logDirectory: csvLogDir);
+  }
+
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     logger.error('Flutter Error', details.exception, details.stack);
@@ -52,20 +71,14 @@ void main() async {
   SharedPreferences preferences;
   if (!kIsWeb) {
     final String appFolderPath = (await getApplicationSupportDirectory()).path;
-    // Prevents data loss if shared_preferences.json gets corrupted
-    // More info and original implementation: https://github.com/flutter/flutter/issues/89211#issuecomment-915096452
     try {
       preferences = await SharedPreferences.getInstance();
-
-      // Store a copy of user's preferences on the disk
       await _backupPreferences(appFolderPath);
     } catch (error) {
       logger.warning(
         'Failed to get shared preferences instance, attempting to retrieve from backup',
         error,
       );
-
-      // Remove broken preferences files and restore previous settings
       await _restorePreferencesFromBackup(appFolderPath);
       preferences = await SharedPreferences.getInstance();
     }
@@ -216,8 +229,6 @@ Future<void> _restorePreferencesFromBackup(String appFolderPath) async {
     await File(original).delete(recursive: true);
 
     if (await File(backup).exists()) {
-      // Check if current backup copy is not broken by looking for letters and "
-      // symbol in it to replace it as an original Settings file
       final String preferences = await File(backup).readAsString();
       if (preferences.contains('"') && preferences.contains(RegExp('[A-z]'))) {
         logger.info('Restoring shared_preferences from backup file at $backup');
@@ -293,6 +304,7 @@ class _ElasticState extends State<Elastic> {
   @override
   void initState() {
     super.initState();
+
     final NT4Subscription enabledSubscription = widget.ntConnection.subscribe(
       '/Match/Enabled',
     );
@@ -307,23 +319,69 @@ class _ElasticState extends State<Elastic> {
         }
       } else {
         _stopRecordingTimer?.cancel();
-        _stopRecordingTimer = Timer(_recordingStopDelay, () {
+        _stopRecordingTimer = Timer(_recordingStopDelay, () async {
           ScreenRecorder.stopAndWait();
           _stopRecordingTimer = null;
         });
+
+        await csvLogger.finishLog();
       }
     });
+
+    if (!kIsWeb) {
+      final NT4Subscription logNameSub = widget.ntConnection.subscribe(
+        '/Log/LogName',
+      );
+      logNameSub.listen((value, _) async {
+        if (value is String && value.trim().isNotEmpty) {
+          await csvLogger.startLog(value.trim());
+        }
+      });
+      final NT4Subscription headerSub = widget.ntConnection.subscribe(
+        '/Log/Header',
+      );
+      headerSub.listen((value, _) {
+        if (value is String && value.isNotEmpty) {
+          csvLogger.setHeader(value);
+        }
+      });
+
+      final NT4Subscription titlesSub = widget.ntConnection.subscribe(
+        '/Log/Titles',
+      );
+
+      titlesSub.listen((titles, _) {
+        if (!csvLogger.isLogging || titles == null) return;
+
+        if (titles is String) {
+          csvLogger.addTitles(titles);
+        }
+      });
+
+      final NT4Subscription titlesDataSub = widget.ntConnection.subscribe(
+        '/Log/TitlesData',
+      );
+      titlesDataSub.listen((data, _) {
+        if (!csvLogger.isLogging || data == null) return;
+        if (data is List) {
+          final String row = data.map((e) => e.toString()).join(',');
+          csvLogger.addLine(row);
+        }
+      });
+    }
 
     widget.ntConnection.addDisconnectedListener(_onRobotDisconnected);
     widget.ntConnection.addConnectedListener(_onRobotConnected);
   }
 
-  void _onRobotDisconnected() {
+  void _onRobotDisconnected() async {
     _stopRecordingOnDisconnectTimer?.cancel();
-    _stopRecordingOnDisconnectTimer = Timer(_recordingStopDelay, () {
+    _stopRecordingOnDisconnectTimer = Timer(_recordingStopDelay, () async {
       ScreenRecorder.stopAndWait();
       _stopRecordingOnDisconnectTimer = null;
     });
+
+    await csvLogger.finishLog();
   }
 
   void _onRobotConnected() {
@@ -337,6 +395,9 @@ class _ElasticState extends State<Elastic> {
     _stopRecordingOnDisconnectTimer?.cancel();
     widget.ntConnection.removeDisconnectedListener(_onRobotDisconnected);
     widget.ntConnection.removeConnectedListener(_onRobotConnected);
+
+    csvLogger.dispose();
+
     super.dispose();
   }
 
@@ -348,14 +409,12 @@ class _ElasticState extends State<Elastic> {
         primaryKey: teamColor,
         brightness: Brightness.dark,
         tones: themeTones.copyWith(
-          // Use older (but incorrect) material 3 legacy tones from 2025 version
           surfaceTone: themeVariant == FlexSchemeVariant.material3Legacy
               ? 8
               : null,
           primaryMinChroma: themeVariant == FlexSchemeVariant.material3Legacy
               ? 0
               : null,
-          // Have the dialog color match the card colors
           surfaceContainerHighTone:
               themeVariant == FlexSchemeVariant.material3Legacy
               ? 8
