@@ -335,7 +335,7 @@ class _ElasticState extends State<Elastic> {
       logNameSub.listen((value, _) async {
         if (value is String && value.trim().isNotEmpty) {
           await csvLogger.startLog(value.trim());
-        } 
+        }
       });
       final NT4Subscription headerSub = widget.ntConnection.subscribe(
         '/Log/Header',
@@ -346,19 +346,17 @@ class _ElasticState extends State<Elastic> {
         }
       });
 
-
-    final NT4Subscription titlesSub = widget.ntConnection.subscribe(
+      final NT4Subscription titlesSub = widget.ntConnection.subscribe(
         '/Log/Titles',
-      );     
+      );
 
-
-       titlesSub.listen((titles, _) {
+      titlesSub.listen((titles, _) {
         if (!csvLogger.isLogging || titles == null) return;
 
-        csvLogger.addLine(titles.toString());
+        if (titles is String) {
+          csvLogger.addTitles(titles);
+        }
       });
-    
-      
 
       final NT4Subscription titlesDataSub = widget.ntConnection.subscribe(
         '/Log/TitlesData',
@@ -383,9 +381,7 @@ class _ElasticState extends State<Elastic> {
       _stopRecordingOnDisconnectTimer = null;
     });
 
-
     await csvLogger.finishLog();
-    
   }
 
   void _onRobotConnected() {

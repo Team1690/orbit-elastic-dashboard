@@ -12,6 +12,7 @@ class CsvLogger {
   String? _header;
 
   final List<String> _lines = [];
+  String _titles = '';
 
   bool _isLogging = false;
   bool get isLogging => _isLogging;
@@ -66,6 +67,11 @@ void addLine(String csvLine) {
   _lines.add(csvLine);
 }
 
+void addTitles(String titles) {
+  if (!_isLogging) return;
+  _titles = titles;
+}
+
   /// Writes the finished CSV to disk.
   Future<void> finishLog() async {
     if (_file == null || _lines.length <= 1) {
@@ -79,8 +85,7 @@ void addLine(String csvLine) {
     final List<String> linesToSave = List.from(_lines);
 
     // Reset logger state immediately so new logs can start cleanly
-    _logName = null;
-    _header = null;
+
     _lines.clear();
 
     try {
@@ -98,6 +103,8 @@ void addLine(String csvLine) {
 
 
     print(linesToSave.length);
+
+    sink.writeln(_titles); // "," happens in robot code
       // 2. Data rows
       for (final line in linesToSave) {
         sink.writeln(line);
