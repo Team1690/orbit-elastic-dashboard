@@ -102,11 +102,6 @@ flutter_launcher_icons:
   web:
     generate: true
 
-  # ffmpeg_kit_extended_config:
-  #   type: base
-  #   gpl: false
-
 ffmpeg_kit_extended_config:
-  windows: https://github.com/akashskypatel/ffmpeg-kit-builders/releases/download/v0.10.2-windows/bundle-base-windows-x86_64-shared-lgpl.zip
-  type: full
+  type: base
   gpl: false
