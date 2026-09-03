@@ -52,7 +52,6 @@ dependencies:
   shared_preferences: ^2.5.3
   syncfusion_flutter_charts: ^31.2.12
   titlebar_buttons: ^1.0.0
-  transitioned_indexed_stack: ^1.0.2
   url_launcher: ^6.3.2
   uuid: ^4.5.2
   vector_math: ^2.2.0
