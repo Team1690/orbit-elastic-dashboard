@@ -441,14 +441,12 @@ class SpecialMarkerPainter extends CustomPainter {
   final Field field;
   final List<Marker> markers;
   final double scale;
-  final double markerSize;
 
   SpecialMarkerPainter({
     required this.center,
     required this.field,
     required this.markers,
     required this.scale,
-    this.markerSize = 0.3, // Default size in meters
   });
 
   @override
@@ -476,7 +474,7 @@ class SpecialMarkerPainter extends CustomPainter {
 
       // Convert marker size from meters to pixels, scaled
       final double scaledMarkerSize =
-          markerSize * field.pixelsPerMeterHorizontal * scale;
+          marker.size * field.pixelsPerMeterHorizontal * scale;
 
       switch (marker.shapeId) {
         case 0: // Circle
@@ -542,7 +540,5 @@ class SpecialMarkerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant SpecialMarkerPainter oldDelegate) =>
-      oldDelegate.markers != markers ||
-      oldDelegate.scale != scale ||
-      oldDelegate.markerSize != markerSize;
+      oldDelegate.markers != markers || oldDelegate.scale != scale;
 }
