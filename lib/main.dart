@@ -377,13 +377,17 @@ class _ElasticState extends State<Elastic> {
         }
       });
 
-      final NT4Subscription titlesDataSub = widget.ntConnection.subscribe(
+      // subscribeAll so the server sends every robot loop's row, not just the
+      // latest value every 100ms
+      final NT4Subscription titlesDataSub = widget.ntConnection.subscribeAll(
         '/Log/TitlesData',
+        0.02,
       );
       titlesDataSub.listen((data, _) {
         if (!csvLogger.isLogging || data == null) return;
         if (data is List) {
-          final String row = data.map((e) => e.toString()).join(',');
+          // trailing "," to match the robot's CSVWriter
+          final String row = '${data.map((e) => e.toString()).join(',')},';
           csvLogger.addLine(row);
         }
       });
@@ -393,19 +397,18 @@ class _ElasticState extends State<Elastic> {
     widget.ntConnection.addConnectedListener(_onRobotConnected);
   }
 
-  void _closeStream() {
+  void _closeStream() async {
     debugPrint('Stopping recording waiting for timer');
     _stopRecordingTimer?.cancel();
-    _stopRecordingTimer = Timer(_recordingStopDelay, () {
+    _stopRecordingTimer = Timer(_recordingStopDelay, () async {
       if ((_hasGameEnded || !_isFMSConnected) &&
           (!_isRobotConnected || !_isEnabled)) {
         debugPrint('Stopped recording');
         ScreenRecorder.stop();
         _stopRecordingTimer = null;
+        await csvLogger.finishLog();
       }
     });
-
-    await csvLogger.finishLog();
   }
 
   void _onRobotDisconnected() {

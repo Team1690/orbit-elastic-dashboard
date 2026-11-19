@@ -98,7 +98,7 @@ void addTitles(String titles) {
 
       // 1. Header (Metadata)
       if (headerToSave != null && headerToSave.isNotEmpty) {
-        sink.writeln(headerToSave);
+        sink.write(headerToSave); // header already ends with "\n"
       }
 
 
