@@ -9,12 +9,14 @@ class Marker {
   final double y;
   final Color color;
   final int shapeId;
+  final double size;
 
   Marker({
     required this.x,
     required this.y,
     required this.color,
     required this.shapeId,
+    required this.size,
   });
 
   @override
@@ -25,10 +27,11 @@ class Marker {
           x == other.x &&
           y == other.y &&
           color == other.color &&
-          shapeId == other.shapeId;
+          shapeId == other.shapeId &&
+          size == other.size;
 
   @override
-  int get hashCode => Object.hash(x, y, color, shapeId);
+  int get hashCode => Object.hash(x, y, color, shapeId, size);
 }
 
 // Manages topics for special markers.
@@ -61,15 +64,16 @@ class SpecialMarkerTopics {
     final List<num> rawData = _markerData.value.cast<num>();
 
     List<Marker> parsedMarkers = [];
-    // The list is [x, y, r, g, b, shapeId, x2, y2, r2, g2, b2, shapeId2, ...]
-    // so we iterate by 6.
-    for (int i = 0; i < rawData.length - 5; i += 6) {
+    // The list is [x, y, r, g, b, shapeId, size, x2, y2, r2, g2, b2, shapeId2, size2, ...]
+    // so we iterate by 7.
+    for (int i = 0; i < rawData.length - 6; i += 7) {
       final double x = (rawData[i]).toDouble();
       final double y = (rawData[i + 1]).toDouble();
       final int r = (rawData[i + 2]).toInt();
       final int g = (rawData[i + 3]).toInt();
       final int b = (rawData[i + 4]).toInt();
       final int shapeId = (rawData[i + 5]).toInt();
+      final double size = (rawData[i + 6]).toDouble();
 
       parsedMarkers.add(
         Marker(
@@ -77,6 +81,7 @@ class SpecialMarkerTopics {
           y: y,
           color: Color.fromARGB(255, r, g, b),
           shapeId: shapeId,
+          size: size,
         ),
       );
     }

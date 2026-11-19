@@ -407,12 +407,6 @@ class FieldWidgetModel extends MultiTopicNTWidgetModel {
 
     super.resetSubscription();
 
-    visionTopics.dispose();
-    gamePieceTopics.dispose();
-    allianceTopic.dispose();
-    commanderTopics.unpublish();
-    specialMarkerTopics.dispose();
-
     ntConnection.removeTopicAnnounceListener(topicAnnounceListener);
     ntConnection.addTopicAnnounceListener(topicAnnounceListener);
   }
