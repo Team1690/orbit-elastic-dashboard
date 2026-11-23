@@ -31,9 +31,13 @@ import 'package:window_manager/window_manager.dart'
     if (dart.library.js_interop) 'package:elastic_dashboard/util/stub/window_stub.dart';
 
 import 'package:elastic_dashboard/util/csv_logger.dart';
+import 'package:elastic_dashboard/util/run_folders.dart';
 
 /// Global instance of CsvLogger accessible across the app.
 late final CsvLogger csvLogger;
+
+/// Per-run output folders (CSV log + screen recording) under a date folder.
+late final RunFolders runFolders;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,13 +58,10 @@ void main() async {
       "c:\\Users\\${Platform.environment['USERNAME']}\\Desktop",
     );
 
-    final DateTime now = DateTime.now();
-
-    final String formattedDate = '${now.day}.${now.month}.${now.year}';
-    final Directory csvLogDir = Directory(
-      '${desktopDir.path}/CSVLogs/$formattedDate',
+    runFolders = RunFolders(
+      rootDirectory: Directory('${desktopDir.path}/CSVLogs'),
     );
-    csvLogger = CsvLogger(logDirectory: csvLogDir);
+    csvLogger = CsvLogger(runFolders: runFolders);
   }
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -334,7 +335,7 @@ class _ElasticState extends State<Elastic> {
         _hasGameEndedTimer = null;
 
         if (!ScreenRecorder.isRecording) {
-          ScreenRecorder.start();
+          ScreenRecorder.start(runFolders.startRun());
           _hasGameEnded = false;
           _hasGameEndedTimer = Timer(_matchDuration, () {
             _hasGameEnded = true;
@@ -404,8 +405,9 @@ class _ElasticState extends State<Elastic> {
       if ((_hasGameEnded || !_isFMSConnected) &&
           (!_isRobotConnected || !_isEnabled)) {
         debugPrint('Stopped recording');
-        ScreenRecorder.stop();
         _stopRecordingTimer = null;
+        await ScreenRecorder.stop();
+        await runFolders.finishRun(csvLogger.logName);
         await csvLogger.finishLog();
       }
     });

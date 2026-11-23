@@ -1,20 +1,24 @@
+import 'dart:io';
+
 import 'package:ffmpeg_kit_extended_flutter/ffmpeg_kit_extended_flutter.dart';
 
 class ScreenRecorder {
   static bool isRecording = false;
-  static Future<void> start() async {
+  static Future<void> start(Directory outputDirectory) async {
     isRecording = true;
+    final String outputPath = '${outputDirectory.path}/${_getFileName()}'
+        .replaceAll('/', '\\');
     final String ffmpegCommand =
-        '-y -f gdigrab -framerate 30 -i desktop -c:v mpeg4 -q:v 3 -pix_fmt yuv420p -movflags frag_keyframe+empty_moov C:\\Users\\Public\\Videos\\${_getFileName()}';
+        '-y -f gdigrab -framerate 30 -i desktop -c:v mpeg4 -q:v 3 -pix_fmt yuv420p -movflags frag_keyframe+empty_moov "$outputPath"';
 
     await FFmpegKit.executeAsync(ffmpegCommand);
   }
 
-  static void stop() {
+  /// Completes once the ffmpeg sessions have been told to cancel.
+  static Future<void> stop() async {
     isRecording = false;
-    Future<void>.delayed(const Duration(seconds: 1), () {
-      FFmpegKitExtended.cancelAllSessions();
-    });
+    await Future<void>.delayed(const Duration(seconds: 1));
+    FFmpegKitExtended.cancelAllSessions();
   }
 
   static String _getFileName() {

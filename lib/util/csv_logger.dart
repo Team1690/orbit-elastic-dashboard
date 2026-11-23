@@ -1,14 +1,20 @@
 import 'dart:io';
 
+import 'package:elastic_dashboard/util/run_folders.dart';
+
 class CsvLogger {
   CsvLogger({
-    required this.logDirectory,
+    required this.runFolders,
   });
 
-  final Directory logDirectory;
+  final RunFolders runFolders;
 
-  File? _file;
+  /// The current run's folder, or today's date folder if no run has started.
+  Directory get logDirectory =>
+      runFolders.currentRun ?? runFolders.todayDirectory;
+
   String? _logName;
+  String? get logName => _logName;
   String? _header;
 
   final List<String> _lines = [];
@@ -48,12 +54,6 @@ class CsvLogger {
     _logName = sanitizedName;
     _header = null;
     _lines.clear();
-
-    if (!await logDirectory.exists()) {
-      await logDirectory.create(recursive: true);
-    }
-
-    _file = File('${logDirectory.path}/$_logName.csv');
   }
 
   /// Called to set top-level metadata or header text.
@@ -76,12 +76,13 @@ class CsvLogger {
 
   /// Writes the finished CSV to disk.
   Future<void> finishLog() async {
-    if (_file == null || _lines.length <= 1) {
+    if (_logName == null || _lines.length <= 1) {
       return;
     }
 
     // Capture local variables in case state changes during async I/O
-    final File fileToSave = _file!;
+    final Directory dirToSave = logDirectory;
+    final File fileToSave = File('${dirToSave.path}/$_logName.csv');
     final String? headerToSave = _header;
     final List<String> linesToSave = List.from(_lines);
 
@@ -90,8 +91,8 @@ class CsvLogger {
     _lines.clear();
 
     try {
-      if (!await logDirectory.exists()) {
-        await logDirectory.create(recursive: true);
+      if (!await dirToSave.exists()) {
+        await dirToSave.create(recursive: true);
       }
 
       // Open file for writing (Mode: WRITE completely overwrites old content cleanly)
