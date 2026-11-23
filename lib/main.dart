@@ -409,8 +409,6 @@ class _ElasticState extends State<Elastic> {
         await csvLogger.finishLog();
       }
     });
-
-    csvLogger.finishLog();
   }
 
   void _onRobotDisconnected() {

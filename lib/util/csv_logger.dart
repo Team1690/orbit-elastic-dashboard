@@ -75,7 +75,7 @@ class CsvLogger {
   }
 
   /// Writes the finished CSV to disk.
-  void finishLog() {
+  Future<void> finishLog() async {
     if (_file == null || _lines.length <= 1) {
       return;
     }
@@ -90,14 +90,13 @@ class CsvLogger {
     _lines.clear();
 
     try {
-      if (!logDirectory.existsSync()) {
-        logDirectory.createSync(recursive: true);
+      if (!await logDirectory.exists()) {
+        await logDirectory.create(recursive: true);
       }
 
       // Open file for writing (Mode: WRITE completely overwrites old content cleanly)
-      final RandomAccessFile sink = fileToSave.openSync(
-        mode: FileMode.writeOnlyAppend,
-      );
+      final IOSink sink = fileToSave.openWrite(mode: FileMode.write);
+
       // 1. Header (Metadata)
       if (headerToSave != null && headerToSave.isNotEmpty) {
         sink.write(headerToSave); // header already ends with "\n"
@@ -105,14 +104,14 @@ class CsvLogger {
 
       print(linesToSave.length);
 
-      sink.writeStringSync(_titles); // "," happens in robot code
+      sink.writeln(_titles); // "," happens in robot code
       // 2. Data rows
-      for (final String line in linesToSave) {
-        sink.writeString(line);
+      for (final line in linesToSave) {
+        sink.writeln(line);
       }
 
-      sink.flushSync();
-      sink.closeSync();
+      await sink.flush();
+      await sink.close();
 
       print("Successfully saved: ${fileToSave.path}");
     } catch (e) {
@@ -121,9 +120,9 @@ class CsvLogger {
   }
 
   /// In case the app closes unexpectedly.
-  void dispose() {
+  Future<void> dispose() async {
     if (_isLogging) {
-      finishLog();
+      await finishLog();
     }
   }
 }
