@@ -357,7 +357,9 @@ class _ElasticState extends State<Elastic> {
           await csvLogger.startLog(value.trim());
         }
       });
-      final NT4Subscription headerSub = widget.ntConnection.subscribe(
+      // subscribeAll so an identical header (robot uses keepDuplicates) is
+      // still delivered
+      final NT4Subscription headerSub = widget.ntConnection.subscribeAll(
         '/Log/Header',
       );
       headerSub.listen((value, _) {

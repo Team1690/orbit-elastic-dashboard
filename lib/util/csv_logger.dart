@@ -52,7 +52,8 @@ class CsvLogger {
     }
 
     _logName = sanitizedName;
-    _header = null;
+    // Keep the previous header: if the robot's header didn't change, NT may
+    // not send it again, and the last one is still correct.
     _lines.clear();
   }
 
