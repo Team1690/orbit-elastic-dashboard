@@ -32,6 +32,7 @@ import 'package:window_manager/window_manager.dart'
 
 import 'package:elastic_dashboard/util/csv_logger.dart';
 import 'package:elastic_dashboard/util/run_folders.dart';
+import 'package:elastic_dashboard/widgets/dialog_widgets/run_name_dialog.dart';
 
 /// Global instance of CsvLogger accessible across the app.
 late final CsvLogger csvLogger;
@@ -298,6 +299,8 @@ class _ElasticState extends State<Elastic> {
 
   FlexTones get themeTones => themeVariant.tones(Brightness.dark);
 
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
   bool _hasGameEnded = false;
   bool _isRobotConnected = true;
   bool _isFMSConnected = false;
@@ -341,9 +344,12 @@ class _ElasticState extends State<Elastic> {
             _hasGameEnded = true;
             _closeStream();
           });
+        } else {
+          runFolders.markRunResumed();
         }
       } else {
         // disable
+        runFolders.markRunEnd();
         _closeStream();
       }
     });
@@ -409,14 +415,38 @@ class _ElasticState extends State<Elastic> {
         debugPrint('Stopped recording');
         _stopRecordingTimer = null;
         await ScreenRecorder.stop();
-        await runFolders.finishRun(csvLogger.logName);
-        await csvLogger.finishLog();
+        final FinishedRun? run = await runFolders.finishRun(csvLogger.logName);
+        await csvLogger.finishLog(directory: run?.directory);
+        // Match runs are already named after their log
+        if (run != null && !run.isMatch) {
+          await _promptRunName(run);
+        }
       }
     });
   }
 
+  /// Lets the user rename a finished run, or discard it entirely.
+  Future<void> _promptRunName(FinishedRun run) async {
+    final BuildContext? context = _navigatorKey.currentContext;
+    if (context == null) return;
+
+    final String? name = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          RunNameDialog(initialName: run.baseName, seconds: run.seconds),
+    );
+
+    if (name == null) {
+      await runFolders.deleteRun(run);
+    } else if (name != run.baseName) {
+      await runFolders.renameRun(run, name);
+    }
+  }
+
   void _onRobotDisconnected() {
     _isRobotConnected = false;
+    runFolders.markRunEnd();
     _closeStream();
   }
 
@@ -457,6 +487,7 @@ class _ElasticState extends State<Elastic> {
       ),
     );
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: appTitle,
       theme: theme,
