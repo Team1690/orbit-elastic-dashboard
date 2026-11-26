@@ -130,25 +130,22 @@ class RunFolders {
     return _rename(run.directory, '${sanitized}_${run.seconds}sec');
   }
 
-  /// Deletes a finished run's folder with everything in it.
-  Future<void> deleteRun(FinishedRun run) async {
-    for (int attempt = 0; attempt < 10; attempt++) {
-      try {
-        if (await run.directory.exists()) {
-          await run.directory.delete(recursive: true);
-        }
-        return;
-      } on FileSystemException {
-        await Future<void>.delayed(const Duration(milliseconds: 500));
-      }
-    }
-    print('Failed to delete run folder ${run.directory.path}');
+  /// Moves a discarded run into the `JUNK` folder next to it (in the date
+  /// folder) instead of deleting it, so it can still be recovered.
+  Future<Directory> junkRun(FinishedRun run) async {
+    final Directory junkDir = Directory('${run.directory.parent.path}/JUNK');
+    await junkDir.create(recursive: true);
+    return _rename(run.directory, _nameOf(run.directory), parent: junkDir);
   }
 
-  Future<Directory> _rename(Directory dir, String newName) async {
-    if (_nameOf(dir) == newName) return dir;
+  Future<Directory> _rename(
+    Directory dir,
+    String newName, {
+    Directory? parent,
+  }) async {
+    parent ??= dir.parent;
+    if (parent.path == dir.parent.path && _nameOf(dir) == newName) return dir;
 
-    final Directory parent = dir.parent;
     String targetPath = '${parent.path}/$newName';
     int suffix = 2;
     while (await Directory(targetPath).exists()) {
