@@ -1,21 +1,44 @@
 import 'dart:io';
 
+/// A run folder that has been closed and stamped with its length.
+class FinishedRun {
+  const FinishedRun({
+    required this.directory,
+    required this.baseName,
+    required this.seconds,
+    required this.isMatch,
+  });
+
+  final Directory directory;
+
+  /// The name without the length suffix, e.g. `Run_01` or `log12`.
+  final String baseName;
+  final int seconds;
+  final bool isMatch;
+}
+
 /// Creates one folder per run (log + screen recording) under a date folder:
 /// `<root>/<d.m.yyyy>/Run_01`, `Run_02`, ...
-/// Runs from a real match are renamed to the match log name (e.g. `log12`).
+/// When the run ends the folder gets its length appended (`Run_01_26sec`),
+/// and runs from a real match are renamed to the match log name (`log12_26sec`).
 class RunFolders {
   RunFolders({required this.rootDirectory});
 
   final Directory rootDirectory;
 
-  static final RegExp _runPattern = RegExp(r'^Run_(\d+)$');
+  static final RegExp _runPattern = RegExp(r'^Run_(\d+)(_\d+sec)?$');
 
   /// Match logs from the robot are `log<match number>`; anything else
   /// (a time like `14.05`, or `no log :(`) isn't a match.
   static final RegExp _matchLogPattern = RegExp(r'^log[1-9]\d*$');
 
+  static final RegExp _invalidNameChars = RegExp(r'[\\/:*?"<>|]');
+
   Directory? _currentRun;
   Directory? get currentRun => _currentRun;
+
+  DateTime? _runStart;
+  DateTime? _runEnd;
 
   // Remembered in memory too, since renamed runs no longer show up as Run_NN
   String? _lastRunDate;
@@ -54,37 +77,94 @@ class RunFolders {
     );
     runDir.createSync(recursive: true);
     _currentRun = runDir;
+    _runStart = DateTime.now();
+    _runEnd = null;
     return runDir;
   }
 
-  /// Renames the current run folder to [logName] if it's a match log.
+  /// Marks when the robot stopped running (disable or disconnect).
+  /// Only the first mark counts until the run is resumed.
+  void markRunEnd() {
+    if (_runStart == null) return;
+    _runEnd ??= DateTime.now();
+  }
+
+  /// The robot was re-enabled before the run was finished.
+  void markRunResumed() {
+    _runEnd = null;
+  }
+
+  /// Appends the run length to the current run folder, and renames it to
+  /// [logName] if it's a match log.
   /// Call after the recording has stopped so the video file isn't locked.
-  Future<void> finishRun(String? logName) async {
+  Future<FinishedRun?> finishRun(String? logName) async {
     final Directory? runDir = _currentRun;
-    if (runDir == null ||
-        logName == null ||
-        !_matchLogPattern.hasMatch(logName) ||
-        _nameOf(runDir) == logName) {
-      return;
-    }
+    final DateTime? start = _runStart;
+    if (runDir == null || start == null) return null;
 
-    final Directory parent = runDir.parent;
-    String targetPath = '${parent.path}/$logName';
-    int suffix = 2;
-    while (await Directory(targetPath).exists()) {
-      targetPath = '${parent.path}/${logName}_${suffix++}';
-    }
+    final int seconds = (_runEnd ?? DateTime.now()).difference(start).inSeconds;
+    _runStart = null;
+    _runEnd = null;
 
-    // ffmpeg may hold the video open briefly after cancelling
+    final bool isMatch = logName != null && _matchLogPattern.hasMatch(logName);
+    final String baseName = isMatch ? logName : _nameOf(runDir);
+
+    final Directory renamed = await _rename(
+      runDir,
+      '${baseName}_${seconds}sec',
+    );
+    // A new run may have started while renaming
+    if (identical(_currentRun, runDir)) _currentRun = renamed;
+
+    return FinishedRun(
+      directory: renamed,
+      baseName: baseName,
+      seconds: seconds,
+      isMatch: isMatch,
+    );
+  }
+
+  /// Renames a finished run to `<name>_<seconds>sec`.
+  Future<Directory> renameRun(FinishedRun run, String name) {
+    final String sanitized = name.trim().replaceAll(_invalidNameChars, '_');
+    return _rename(run.directory, '${sanitized}_${run.seconds}sec');
+  }
+
+  /// Deletes a finished run's folder with everything in it.
+  Future<void> deleteRun(FinishedRun run) async {
     for (int attempt = 0; attempt < 10; attempt++) {
       try {
-        _currentRun = await runDir.rename(targetPath);
+        if (await run.directory.exists()) {
+          await run.directory.delete(recursive: true);
+        }
         return;
       } on FileSystemException {
         await Future<void>.delayed(const Duration(milliseconds: 500));
       }
     }
-    print('Failed to rename run folder ${runDir.path} to $targetPath');
+    print('Failed to delete run folder ${run.directory.path}');
+  }
+
+  Future<Directory> _rename(Directory dir, String newName) async {
+    if (_nameOf(dir) == newName) return dir;
+
+    final Directory parent = dir.parent;
+    String targetPath = '${parent.path}/$newName';
+    int suffix = 2;
+    while (await Directory(targetPath).exists()) {
+      targetPath = '${parent.path}/${newName}_${suffix++}';
+    }
+
+    // ffmpeg may hold the video open briefly after cancelling
+    for (int attempt = 0; attempt < 10; attempt++) {
+      try {
+        return await dir.rename(targetPath);
+      } on FileSystemException {
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+      }
+    }
+    print('Failed to rename run folder ${dir.path} to $targetPath');
+    return dir;
   }
 
   static String _nameOf(Directory dir) =>

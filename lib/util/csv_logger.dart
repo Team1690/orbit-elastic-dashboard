@@ -75,14 +75,14 @@ class CsvLogger {
     _titles = titles;
   }
 
-  /// Writes the finished CSV to disk.
-  Future<void> finishLog() async {
+  /// Writes the finished CSV to disk, into [directory] if given.
+  Future<void> finishLog({Directory? directory}) async {
     if (_logName == null || _lines.length <= 1) {
       return;
     }
 
     // Capture local variables in case state changes during async I/O
-    final Directory dirToSave = logDirectory;
+    final Directory dirToSave = directory ?? logDirectory;
     final File fileToSave = File('${dirToSave.path}/$_logName.csv');
     final String? headerToSave = _header;
     final List<String> linesToSave = List.from(_lines);
