@@ -425,7 +425,7 @@ class _ElasticState extends State<Elastic> {
     });
   }
 
-  /// Lets the user rename a finished run, or discard it entirely.
+  /// Lets the user rename a finished run, or discard it into the JUNK folder.
   Future<void> _promptRunName(FinishedRun run) async {
     final BuildContext? context = _navigatorKey.currentContext;
     if (context == null) return;
@@ -438,7 +438,7 @@ class _ElasticState extends State<Elastic> {
     );
 
     if (name == null) {
-      await runFolders.deleteRun(run);
+      await runFolders.junkRun(run);
     } else if (name != run.baseName) {
       await runFolders.renameRun(run, name);
     }
